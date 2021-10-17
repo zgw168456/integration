@@ -1,6 +1,8 @@
 """Data handler for HACS."""
 import asyncio
 import os
+from pathlib import Path
+from shutil import copyfile
 
 from homeassistant.core import callback
 
@@ -120,12 +122,19 @@ class HacsData:
         hacs = await async_load_from_store(self.hacs.hass, "hacs")
         repositories = await async_load_from_store(self.hacs.hass, "repositories") or {}
 
-        if not hacs and not repositories:
-            # Assume new install
-            self.hacs.status.new = True
-            return True
-        self.logger.info("Restore started")
-        self.hacs.status.new = False
+        if not repositories:
+            self.hacs.log.info("No repositories")
+
+            def _cpoy_base():
+                copyfile(
+                    Path(
+                        self.hacs.hass.config.path("custom_components/hacs/helpers/base_data.json")
+                    ),
+                    Path(self.hacs.hass.config.path(".storage/hacs.repositories")),
+                )
+
+            await self.hacs.hass.async_add_executor_job(_cpoy_base)
+            repositories = await async_load_from_store(self.hacs.hass, "repositories") or {}
 
         # Hacs
         self.hacs.configuration.frontend_mode = hacs.get("view", "Grid")

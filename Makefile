@@ -20,6 +20,9 @@ start: ## Start the HA with the integration
 test: ## Run pytest
 	@python3 -m pytest tests -rxf -x -v -l --cov=./ --cov-report=xml
 
+generate-base_data:
+	jq -c 'del(.data | ."172733314") | del(.data | .version_installed)' /tmp/config/.storage/hacs.repositories > ./custom_components/hacs/helpers/base_data.json
+
 lint: ## Run linters
 	set -e
 	isort .
