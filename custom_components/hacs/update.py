@@ -8,7 +8,7 @@ from homeassistant.components.update import UpdateEntity
 from .base import HacsBase
 from .const import DOMAIN
 from .entity import HacsRepositoryEntity
-from .enums import HacsCategory
+from .enums import HacsCategory, HacsGitHubRepo
 
 
 async def async_setup_entry(hass, _config_entry, async_add_devices):
@@ -35,6 +35,13 @@ class HacsRepositoryUpdateEntity(HacsRepositoryEntity, UpdateEntity):
         if self.repository.pending_update:
             return self.repository.display_available_version
         return self.installed_version
+
+    @property
+    def entity_picture(self) -> str | None:
+        """Return the brands icon for the entity."""
+        if self.repository.data.full_name == HacsGitHubRepo.INTEGRATION:
+            return "https://brands.home-assistant.io/hacs/icon.png"
+        return None
 
     @property
     def release_url(self) -> str:
